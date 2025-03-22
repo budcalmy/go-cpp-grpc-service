@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+service InitSystem {
+    rpc GeneratePrivateKey (PrivateKeyConfig) returns (PrivateKey);
+
+    rpc GenerateSelfSignedCertificate (SelfSignedCertificateConfig) returns (SelfSignedCertificate);
+
+    rpc GenerateCRL (CRLConfig) returns (CRL);
+
+    rpc InitSys (InitConfig) returns (stream InitEvent);
+
+}
+
+message PrivateKeyConfig {
+    string keyType = 1;
+    int32 keyLength = 2;
+    int32 validityDays = 3;
+    // optional string curve = 3;
+}
+
+message PrivateKey {
+    string keyType = 2;
+    string keyLength = 3;
+    string createdAt = 4;
+    string expiresAt = 5;
+    string keyPem = 6;
+    
+    optional string err = 7;
+}
+
+message CertificateSubject {
+    string CN = 1;
+    string O = 2;
+    string C = 3;
+    string L = 4;
+}
+
+message SelfSignedCertificateConfig {
+    string pkeyPem = 1;
+    CertificateSubject subject = 2;
+    int32 validityDays = 3;
+}
+
+message SelfSignedCertificate {
+    CertificateSubject subject = 2;
+    string status = 3;
+    string issuedAt = 4;
+    string expiresAt = 5;
+    string certPem = 6;
+
+    optional string err = 8;
+}
+
+message CRLConfig {
+    int32 validityDays = 1;
+    string pkeyPem = 2;
+    string certPem = 3;
+}
+
+message CRL {
+    string crlPem = 1;
+    string issuedAt = 2;
+    string expiresAt = 3;
+
+    optional string err = 4;
+}
+
+message InitConfig {
+    PrivateKeyConfig keyConfig = 1;
+    CertificateSubject certSubject = 2;
+    int32 certValidityDays = 3;
+    int32 crlValidityDays = 4;
+}
+
+message InitEvent {
+    string step = 1;   // "Generating Key", "Generating Certificate", "Generating CRL"
+    string status = 2; // "In Progress", "Success", "Failed"
+    optional string details = 3;
+
+    optional PrivateKey pkey = 4;
+    optional SelfSignedCertificate cert = 5;
+    optional CRL crl = 6;
+    // bool completed = 7;
+}
